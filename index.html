@@ -1,0 +1,189 @@
+<!--  
+    ************ PROGRAMME ACCURATELY POTRAYS INFORMATION FROM API 
+                * FEATURES 
+                        * THE PROGRAMME SHOWS THE QUESTION
+                        * THE PROGRAMME SHOWS A LIST OF POTENTIAL ANSWERS
+                        * THE PROGRAMME PRESENTS OPTIONS TO THE USERS 
+                        * THE PROGRAMME ALERTS WHEN THE CORRECT BUTTON IS PRESSED
+                
+                * FEATURES TO ADD
+                        * CORRECT BUTTON SELECTION TO DISPLAY USER CORRECT ANSWER 
+                        * FALSE ANSWER BUTTONS TO LINK TO DISPLAY FALSE ANSWER MESSAGE
+
+                * ISSUES TO MEND
+                        * CURRENTLY CORRECT BUTTON IS ALWAYS THE FURTHERST RIGHT BUTTON WITH HIGHEST NUMBER
+                        * 10 SECONDS REQUIRED IN BETWEEN PRESSING NEW QUESTION PROVIDE SOME KIND OF MESSAGE TO USER WARNING THEM OF THIS
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./style.css">
+    <title>Document</title>
+    <style>
+        * {
+            font-family:Arial, Helvetica, sans-serif;
+            font-size: 1rem;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #76a4ff;
+            margin: 0;
+        }
+
+        div {
+            background-color: beige;
+            border-radius: 20px;
+            text-align: center;
+            justify-content: center;
+            padding: 40px;
+            padding-bottom: 40px;
+        }
+
+        #question {
+            padding-bottom: 10px;
+        }
+
+        h1 {
+            position: relative;
+            font-size: 1.2rem;
+        }
+
+        button {
+            margin-left: 10px;
+            padding: 10px 20px;
+            background-color: #4caf50;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            scale: 108%;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="questionPLacement">
+        <h1>Question Generator</h1>
+        <button id="button" onclick="getQuestion()">Get Question</button>
+        <div id="question"></div>
+      <!--  <button id="button" onclick="punchlineReveal()">Get Punchline</button> -->
+    </div>
+</body>
+<script>
+    let count = 0;
+    let previousFalseAnswers = 0;
+    let correctAnswerNumber;
+
+    async function getQuestion() {
+
+        // ACCESS API
+        const reponse = await fetch("https://opentdb.com/api.php?amount=10")
+        questionData = await reponse.json()
+        console.log(questionData)
+
+        // SAVE INFORMATION REGARDING QUESTIONS INTO VARIABLES
+        const question = questionData.results[0].question
+        const falseAnswers = questionData.results[0].incorrect_answers
+        const numberFalseAnswers = questionData.results[0].incorrect_answers.length
+        const buttonPlacement = document.getElementById("question")
+        
+        // PREPARE THE DOM WITH INFORMATION PROVIDED FROM API
+        buttonPlacement.innerHTML = question
+
+        // IF BUTTON PREVIOUS CLICKED REMOVE PREVIOUS INFORMATION FROM DOM
+        notFirstTimeCheck()
+    
+        // CYCLE OVER FALSE ANSWERS AND PREPARE FALSE ANSWER BUTTONS FOR DOM
+        const correctAnswerPosition = Math.floor(Math.random() * numberFalseAnswers)
+
+        // THIS IS THE MAIN BODY LOGIC 
+            // LOOPS THROUGH THE NUMBER OF FALSE ANSWERS PROVIDED BY API 
+            // PROVIDES A RANDOM INSTANCE TO PLACE CORRECT ANSWER WHICH IS NEVER LAST
+            // ADDS FALSE ANSWERS 
+            // ADDS BUTTONS FOR USER TO CLICK
+        let i = 0
+        while (i <= numberFalseAnswers) {
+            if (correctAnswerPosition === i) {
+                addCorrectAnswerToDom(i)
+                correctAnswerNumber = i
+                console.log("correctAnswerNumber = " + correctAnswerNumber+1)
+            }
+            if (i !== numberFalseAnswers) {
+            const child = document.createElement("h2")
+            child.setAttribute(`id`, `falseAnswer${i}`)
+            child.innerHTML = falseAnswers[i]
+            document.getElementById("question").appendChild(child)
+            }
+
+            const newButton = document.createElement("button")
+            newButton.setAttribute(`id`,`answer${(numberFalseAnswers + 1) - i}`)
+            newButton.innerHTML = `Answer ${(numberFalseAnswers + 1) - i}`
+            
+            buttonPlacement.after(newButton)
+            i ++
+        }
+
+        // ASSIGNS THE CORRECT ANSWER LOGIC TO THE CORRESPONDING BUTTON
+        document.getElementById(`answer${correctAnswerNumber+1}`).setAttribute(`onclick`,'correctAnswerSelected()')
+        previousFalseAnswers = i
+        count = count + 1;
+        i = 0
+    }
+
+    // LOGIC TO DISPLAY TO USER WHEN THEY FIND THE CORRECT ANSWER
+    function correctAnswerSelected() {
+        alert("correctAnswerSelected")
+    }
+    
+    // LOGIC TO REMOVE ANSWERS AND BUTTONS FROM PREVIOUS GETQUESTION() CALLS
+    function notFirstTimeCheck() {
+        if (count > 0) {
+            let j = 1;
+            while (j <= previousFalseAnswers) {
+                let falseAnswer = document.getElementById(`falseAnswer${j-1}`)
+                let answer = document.getElementById(`answer${j}`)
+                answer.remove()
+                j++
+            }
+        }
+    }
+
+    // LOGIC TO ADD THE CORRECT ANSWER TO THE DOM
+    function addCorrectAnswerToDom(position) {
+        const answer = questionData.results[0].correct_answer
+        const answerHTML = document.createElement("h2")
+        answerHTML.setAttribute(`id`,`correctAnswer`)
+        answerHTML.innerHTML = answer
+        document.getElementById("question").appendChild(answerHTML)
+    }
+
+    // LEGACY FUNCTION NO LONGER USED
+    /*
+    function createAnswerButton(numberFalseAnswers) {
+        
+        const buttonPlacement = document.getElementById("question")
+        const correctButton = document.createElement("button")
+        correctButton.setAttribute(`id`,`correctAnswerButton`)
+        correctButton.innerHTML = `Answer ${numberFalseAnswers+1} `
+        buttonPlacement.after(correctButton)
+        console.log("createAnswerButtonFinished")
+
+        return document.getElementById("question")
+    }
+    */
+
+</script>
+</html>
