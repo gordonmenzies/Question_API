@@ -5,14 +5,11 @@
                         * THE PROGRAMME SHOWS A LIST OF POTENTIAL ANSWERS
                         * THE PROGRAMME PRESENTS OPTIONS TO THE USERS 
                         * THE PROGRAMME ALERTS WHEN THE CORRECT BUTTON IS PRESSED
-                
-                * FEATURES TO ADD
-                        * CORRECT BUTTON SELECTION TO DISPLAY USER CORRECT ANSWER 
-                        * FALSE ANSWER BUTTONS TO LINK TO DISPLAY FALSE ANSWER MESSAGE
 
                 * ISSUES TO MEND
-                        * CURRENTLY CORRECT BUTTON IS ALWAYS THE FURTHERST RIGHT BUTTON WITH HIGHEST NUMBER
                         * 10 SECONDS REQUIRED IN BETWEEN PRESSING NEW QUESTION PROVIDE SOME KIND OF MESSAGE TO USER WARNING THEM OF THIS
+                        * LINE 223 ANSWER SOMETIMES SHOW"S SOMTIME'S DOESN'T
+                        * CORRECT ANSWER NEVER FINAL OPTION
 -->
 
 <!DOCTYPE html>
@@ -71,6 +68,46 @@
             scale: 108%;
             cursor: pointer;
         }
+        /*
+        MODAL CSS
+        */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+
+        /* Modal Content/Box */
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Could be more or less, depending on screen size */
+        }
+
+        /* The Close Button */
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        
     </style>
 </head>
 
@@ -79,13 +116,19 @@
         <h1>Question Generator</h1>
         <button id="button" onclick="getQuestion()">Get Question</button>
         <div id="question"></div>
-      <!--  <button id="button" onclick="punchlineReveal()">Get Punchline</button> -->
+        <div id="myModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h1 id="modalAnswer"> Well done you chose the correct answer! </h1>
+            </div>
+        </div>
     </div>
 </body>
 <script>
     let count = 0;
     let previousFalseAnswers = 0;
     let correctAnswerNumber;
+    let finalAnswer;
 
     async function getQuestion() {
 
@@ -131,24 +174,22 @@
             const newButton = document.createElement("button")
             newButton.setAttribute(`id`,`answer${(numberFalseAnswers + 1) - i}`)
             newButton.innerHTML = `Answer ${(numberFalseAnswers + 1) - i}`
+            newButton.setAttribute("onclick", "falseAnswer()")
             
             buttonPlacement.after(newButton)
             i ++
         }
 
         // ASSIGNS THE CORRECT ANSWER LOGIC TO THE CORRESPONDING BUTTON
-        document.getElementById(`answer${correctAnswerNumber+1}`).setAttribute(`onclick`,'correctAnswerSelected()')
+        finalAnswer = document.getElementById(`answer${correctAnswerNumber+1}`)
+        finalAnswer.setAttribute(`onclick`,'correctAnswerSelected(), closeModal()')
+
+        // UPDATE COUNT AND SAVE PREVIOUS FALSE ANSWERS FOR USE IN THE CLEANER FUNCTION
         previousFalseAnswers = i
         count = count + 1;
-        i = 0
     }
 
-    // LOGIC TO DISPLAY TO USER WHEN THEY FIND THE CORRECT ANSWER
-    function correctAnswerSelected() {
-        alert("correctAnswerSelected")
-    }
-    
-    // LOGIC TO REMOVE ANSWERS AND BUTTONS FROM PREVIOUS GETQUESTION() CALLS
+        // LOGIC TO REMOVE ANSWERS AND BUTTONS FROM PREVIOUS GETQUESTION() CALLS
     function notFirstTimeCheck() {
         if (count > 0) {
             let j = 1;
@@ -161,6 +202,7 @@
         }
     }
 
+
     // LOGIC TO ADD THE CORRECT ANSWER TO THE DOM
     function addCorrectAnswerToDom(position) {
         const answer = questionData.results[0].correct_answer
@@ -168,6 +210,52 @@
         answerHTML.setAttribute(`id`,`correctAnswer`)
         answerHTML.innerHTML = answer
         document.getElementById("question").appendChild(answerHTML)
+    }
+
+    // ***** MODAL LOGIC *****
+    // LOGIC TO DISPLAY TO USER WHEN THEY FIND THE CORRECT ANSWER
+    
+    var modal = document.getElementById("myModal");
+
+
+    // SOMETIMES FIRES SOMETIMES DOESN"T BUTTON TO CHANGE QUESTION DOESN'T SHOW
+
+    function correctAnswerSelected() {
+        modal.style.display = "block"
+        document.getElementById("modalAnswer").innerHTML = "Congratulations You Got The Right Answer"
+
+        let answerButton = document.createElement("button")
+        answerButton.setAttribute(`id`,`modalButton`)
+        answerButton.innerHTML = `New Question`
+        answerButton.setAttribute("onclick", "correctAnswerSelected()")
+        document.getElementById("modalAnswer").appendChild(answerButton)
+        console.log("reached")
+
+    }
+
+    function falseAnswer() {
+        if (document.getElementById('modalButton')) {
+            document.getElementById('modalButton').remove()
+        }
+        modal.style.display = "block"
+        const changeText = document.getElementById("modalAnswer")
+        changeText.innerHTML = "incorrect answer guess again"
+    }
+
+    // Get the button that opens the modal
+    var btn = document.getElementById("myBtn");
+
+    // When the user clicks on <span> (x), close the modal
+    function closeModal() {
+        modal.style.display = "none";
+    }
+    
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function(event) {
+    if (event.target == modal) {
+    modal.style.display = "none";
+    }
     }
 
     // LEGACY FUNCTION NO LONGER USED
