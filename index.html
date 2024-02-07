@@ -8,7 +8,7 @@
 
                 * ISSUES TO MEND
                         * 10 SECONDS REQUIRED IN BETWEEN PRESSING NEW QUESTION PROVIDE SOME KIND OF MESSAGE TO USER WARNING THEM OF THIS
-                        * LINE 223 ANSWER SOMETIMES SHOW"S SOMTIME'S DOESN'T
+                        * LINE 223 ANSWER SOMETIMES SHOW'S SOMTIME'S DOESN'T
                         * CORRECT ANSWER NEVER FINAL OPTION
 -->
 
@@ -131,7 +131,7 @@
     let finalAnswer;
 
     async function getQuestion() {
-
+        closeModal()
         // ACCESS API
         const reponse = await fetch("https://opentdb.com/api.php?amount=10")
         questionData = await reponse.json()
@@ -182,7 +182,7 @@
 
         // ASSIGNS THE CORRECT ANSWER LOGIC TO THE CORRESPONDING BUTTON
         finalAnswer = document.getElementById(`answer${correctAnswerNumber+1}`)
-        finalAnswer.setAttribute(`onclick`,'correctAnswerSelected(), closeModal()')
+        finalAnswer.setAttribute(`onclick`,'correctAnswerSelected()')
 
         // UPDATE COUNT AND SAVE PREVIOUS FALSE ANSWERS FOR USE IN THE CLEANER FUNCTION
         previousFalseAnswers = i
@@ -216,18 +216,20 @@
     // LOGIC TO DISPLAY TO USER WHEN THEY FIND THE CORRECT ANSWER
     
     var modal = document.getElementById("myModal");
+    var correctModal = document.getElementById("correctModal")
 
 
     // SOMETIMES FIRES SOMETIMES DOESN"T BUTTON TO CHANGE QUESTION DOESN'T SHOW
 
     function correctAnswerSelected() {
         modal.style.display = "block"
+
         document.getElementById("modalAnswer").innerHTML = "Congratulations You Got The Right Answer"
 
         let answerButton = document.createElement("button")
         answerButton.setAttribute(`id`,`modalButton`)
         answerButton.innerHTML = `New Question`
-        answerButton.setAttribute("onclick", "correctAnswerSelected()")
+        answerButton.setAttribute("onclick", "getQuestion()")
         document.getElementById("modalAnswer").appendChild(answerButton)
         console.log("reached")
 
